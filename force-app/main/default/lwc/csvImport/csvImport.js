@@ -136,13 +136,13 @@ export default class CsvImport extends LightningElement {
                 Object.entries(errorsByRow).forEach(([index, message]) => errors.push({ line: start + Number(index) + 2, message }));
                 this.processed = Math.min(start + BATCH_SIZE, this.rows.length);
             }
+            this.notify(errors.length ? 'warning' : 'success', `${this.processed - errors.length} registros importados, ${errors.length} com erro.`);
         } catch (error) {
             this.notify('error', error.body?.message ?? error.message);
         } finally {
             this.isLoading = false;
             this.errors = errors;
         }
-        this.notify(errors.length ? 'warning' : 'success', `${this.processed - errors.length} registros importados, ${errors.length} com erro.`);
     }
 
     handleDownloadTemplate() {

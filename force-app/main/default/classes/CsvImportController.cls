@@ -73,7 +73,8 @@ public with sharing class CsvImportController {
         List<Database.SaveResult> saveResults = Database.insert(records, false, AccessLevel.USER_MODE);
         for (Integer i = 0; i < saveResults.size(); i++) {
             if (!saveResults[i].isSuccess()) {
-                errorsByRow.put(recordRows[i], saveResults[i].getErrors()[0].getMessage());
+                Database.Error error = saveResults[i].getErrors()[0];
+                errorsByRow.put(recordRows[i], error.getStatusCode() + ': ' + error.getMessage());
             }
         }
         return errorsByRow;
