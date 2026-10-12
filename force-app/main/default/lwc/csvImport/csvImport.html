@@ -1,0 +1,44 @@
+<template>
+    <lightning-card title="Importação de registros via CSV" icon-name="doctype:csv">
+        <div class="slds-p-horizontal_medium">
+            <lightning-combobox
+                label="Configuração"
+                placeholder="Selecione"
+                options={configurationOptions}
+                value={configuration}
+                onchange={handleConfigurationChange}
+            ></lightning-combobox>
+            <template lwc:if={configuration}>
+                <p class="slds-m-vertical_small slds-text-color_weak">Colunas esperadas: {expectedColumnsLabel}</p>
+                <lightning-button label="Baixar modelo" icon-name="utility:download" onclick={handleDownloadTemplate}></lightning-button>
+                <lightning-input
+                    class="slds-m-top_small"
+                    type="file"
+                    label="Arquivo CSV"
+                    accept=".csv"
+                    onchange={handleFileChange}
+                ></lightning-input>
+                <p lwc:if={fileName} class="slds-m-top_x-small">{fileName}: {rows.length} linha(s)</p>
+            </template>
+            <lightning-progress-bar lwc:if={isLoading} class="slds-m-top_small" value={progress}></lightning-progress-bar>
+            <lightning-datatable
+                lwc:if={hasErrors}
+                class="slds-m-top_small"
+                key-field="line"
+                data={errors}
+                columns={errorColumns}
+                hide-checkbox-column
+            ></lightning-datatable>
+        </div>
+        <div slot="footer">
+            <lightning-button lwc:if={hasErrors} label="Baixar erros" icon-name="utility:download" onclick={handleDownloadErrors}></lightning-button>
+            <lightning-button
+                class="slds-m-left_x-small"
+                variant="brand"
+                label="Importar"
+                disabled={isImportDisabled}
+                onclick={handleImport}
+            ></lightning-button>
+        </div>
+    </lightning-card>
+</template>
