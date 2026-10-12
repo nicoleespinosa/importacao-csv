@@ -129,12 +129,12 @@ export default class CsvImport extends LightningElement {
         const errors = [];
         try {
             for (let start = 0; start < this.rows.length; start += BATCH_SIZE) {
-                const results = await importRecords({
+                const errorsByRow = await importRecords({
                     configuration: this.configuration,
                     rows: this.rows.slice(start, start + BATCH_SIZE)
                 });
-                results.forEach((message, index) => message && errors.push({ line: start + index + 2, message }));
-                this.processed = start + results.length;
+                Object.entries(errorsByRow).forEach(([index, message]) => errors.push({ line: start + Number(index) + 2, message }));
+                this.processed = Math.min(start + BATCH_SIZE, this.rows.length);
             }
         } catch (error) {
             this.notify('error', error.body?.message ?? error.message);

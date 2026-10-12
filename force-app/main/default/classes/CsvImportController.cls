@@ -22,7 +22,7 @@ public with sharing class CsvImportController {
     }
 
     @AuraEnabled
-    public static List<String> importRecords(String configuration, List<Map<String, String>> rows) {
+    public static Map<Integer, String> importRecords(String configuration, List<Map<String, String>> rows) {
         List<CSVImportMapping__mdt> configurationMappings = new List<CSVImportMapping__mdt>();
         for (CSVImportMapping__mdt mapping : mappings) {
             if (mapping.Configuration__c == configuration) {
@@ -47,7 +47,7 @@ public with sharing class CsvImportController {
             fieldByColumn.put(mapping.CsvColumn__c, fields.get(mapping.FieldApiName__c).getDescribe());
         }
 
-        String[] results = new String[rows.size()];
+        Map<Integer, String> errorsByRow = new Map<Integer, String>();
         List<SObject> records = new List<SObject>();
         List<Integer> recordRows = new List<Integer>();
         for (Integer i = 0; i < rows.size(); i++) {
@@ -60,11 +60,11 @@ public with sharing class CsvImportController {
                         record.put(field.getName(), convert(field.getType(), value));
                     }
                 } catch (Exception e) {
-                    results[i] = column + ': ' + e.getMessage();
+                    errorsByRow.put(i, column + ': ' + e.getMessage());
                     break;
                 }
             }
-            if (results[i] == null) {
+            if (!errorsByRow.containsKey(i)) {
                 records.add(record);
                 recordRows.add(i);
             }
@@ -73,10 +73,10 @@ public with sharing class CsvImportController {
         List<Database.SaveResult> saveResults = Database.insert(records, false, AccessLevel.USER_MODE);
         for (Integer i = 0; i < saveResults.size(); i++) {
             if (!saveResults[i].isSuccess()) {
-                results[recordRows[i]] = saveResults[i].getErrors()[0].getMessage();
+                errorsByRow.put(recordRows[i], saveResults[i].getErrors()[0].getMessage());
             }
         }
-        return results;
+        return errorsByRow;
     }
 
     @TestVisible

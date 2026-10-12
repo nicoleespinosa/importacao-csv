@@ -35,13 +35,12 @@ private class CsvImportControllerTest {
         rows.add(new Map<String, String>{ 'Funcionários' => '1' });
 
         Test.startTest();
-        List<String> results = CsvImportController.importRecords(CONFIGURATION, rows);
+        Map<Integer, String> errorsByRow = CsvImportController.importRecords(CONFIGURATION, rows);
         Test.stopTest();
 
-        Assert.areEqual(202, results.size());
-        Assert.isNull(results[199]);
-        Assert.isTrue(results[200].startsWith('Funcionários: '));
-        Assert.isNotNull(results[201]);
+        Assert.areEqual(2, errorsByRow.size());
+        Assert.isTrue(errorsByRow.get(200).startsWith('Funcionários: '));
+        Assert.isTrue(errorsByRow.containsKey(201));
         Assert.areEqual(200, [SELECT COUNT() FROM Account]);
     }
 
